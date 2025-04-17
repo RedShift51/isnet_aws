@@ -1,0 +1,105 @@
+name: Deploy ISNet to SageMaker
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'deploy/sagemaker/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -e .
+      
+      - name: Run unit tests
+        run: |
+          pytest tests/ -v --exclude-integration
+  
+  deploy:
+    name: Deploy Model
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install boto3 sagemaker
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Set environment variables
+        id: vars
+        run: |
+          # Determine environment from input or default to dev for branch pushes
+          ENV=${{ github.event.inputs.environment || 'dev' }}
+          echo "ENV=$ENV" >> $GITHUB_ENV
+          
+          # Set endpoint name with environment and timestamp
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          echo "ENDPOINT_NAME=isnet-endpoint-${ENV}-${TIMESTAMP}" >> $GITHUB_ENV
+          
+          # Set instance type based on environment
+          if [ "$ENV" == "prod" ]; then
+            echo "INSTANCE_TYPE=ml.c5.xlarge" >> $GITHUB_ENV
+          elif [ "$ENV" == "staging" ]; then
+            echo "INSTANCE_TYPE=ml.c5.large" >> $GITHUB_ENV
+          else
+            echo "INSTANCE_TYPE=ml.c5.large" >> $GITHUB_ENV
+          fi
+      
+      - name: Deploy to SageMaker from GCS
+        run: |
+          # Run the deployment script
+          python deploy/sagemaker/deploy_from_gcs.py \
+            --gcs-uri ${{ secrets.GCS_MODEL_URL }} \
+            --role ${{ secrets.SAGEMAKER_ROLE_ARN }} \
+            --instance-type ${{ env.INSTANCE_TYPE }} \
+            --endpoint-name ${{ env.ENDPOINT_NAME }} \
+            --region ${{ secrets.AWS_REGION }}
+      
+      - name: Update deployment status
+        run: |
+          echo "Deployed ISNet model to endpoint ${{ env.ENDPOINT_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "Environment: ${{ env.ENV }}" >> $GITHUB_STEP_SUMMARY
+          echo "Instance Type: ${{ env.INSTANCE_TYPE }}" >> $GITHUB_STEP_SUMMARY
+          echo "Deployment timestamp: $(date)" >> $GITHUB_STEP_SUMMARY

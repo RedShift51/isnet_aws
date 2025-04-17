@@ -1,0 +1,15 @@
+{
+    "initial_instance_count": 1,
+    "autoscaling": {
+        "min_capacity": 1,
+        "max_capacity": 2,
+        "target_value": 90
+    },
+    "environment_variables": {
+        "MODEL_CACHE_SIZE": "2",
+        "MODEL_PATH": "/opt/ml/model/isnet_converted/isnet_converted1.onnx",
+        "LOG_LEVEL": "INFO"
+    },
+    "timeout_seconds": 120,
+    "max_concurrent_invocations_per_instance": 4
+}
