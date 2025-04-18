@@ -91,7 +91,7 @@ jobs:
         run: |
           # Run the deployment script
           python deploy/sagemaker/deploy_from_gcs.py \
-            --gcs-uri ${{ secrets.GCS_MODEL_URL }} \
+            --s3-uri ${{ secrets.S3_MODEL_URL }} \
             --role ${{ secrets.SAGEMAKER_ROLE_ARN }} \
             --instance-type ${{ env.INSTANCE_TYPE }} \
             --endpoint-name ${{ env.ENDPOINT_NAME }} \
