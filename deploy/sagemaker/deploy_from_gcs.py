@@ -10,7 +10,7 @@ def parse_args():
                         help='S3 URI for model.tar.gz')
     parser.add_argument('--role', type=str,
                         help='SageMaker execution role ARN (if not provided, gets default role)')
-    parser.add_argument('--instance-type', type=str, default='ml.c5.large',
+    parser.add_argument('--instance-type', type=str, default='ml.g4dn.xlarge',
                         help='SageMaker instance type for the endpoint (use ml.g4dn.xlarge for GPU)')
     parser.add_argument('--endpoint-name', type=str,
                         default=f'isnet-endpoint-{datetime.now().strftime("%Y%m%d%H%M%S")}',
