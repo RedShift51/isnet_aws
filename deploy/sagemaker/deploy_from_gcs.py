@@ -4,10 +4,10 @@ import sagemaker
 from datetime import datetime
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Deploy ISNet model from Google Cloud Storage to SageMaker')
-    parser.add_argument('--gcs-uri', type=str, 
-                        default='https://storage.cloud.google.com/abuz_public/model.tar.gz',
-                        help='Public Google Cloud Storage URL for model.tar.gz')
+    parser = argparse.ArgumentParser(description='Deploy ISNet model from S3 to SageMaker')
+    parser.add_argument('--s3-uri', type=str,
+                        default='s3://abuz-public/model.tar.gz',
+                        help='S3 URI for model.tar.gz')
     parser.add_argument('--role', type=str,
                         help='SageMaker execution role ARN (if not provided, gets default role)')
     parser.add_argument('--instance-type', type=str, default='ml.c5.large',
@@ -15,13 +15,13 @@ def parse_args():
     parser.add_argument('--endpoint-name', type=str,
                         default=f'isnet-endpoint-{datetime.now().strftime("%Y%m%d%H%M%S")}',
                         help='Name for the SageMaker endpoint')
-    parser.add_argument('--region', type=str, default='us-west-2',
+    parser.add_argument('--region', type=str, default='eu-west-2',
                         help='AWS region')
     parser.add_argument('--update-if-exists', action='store_true',
                         help='Update endpoint if it already exists')
     return parser.parse_args()
 
-def deploy_model_from_gcs():
+def deploy_model_from_s3():
     args = parse_args()
     
     # Initialize SageMaker session
@@ -48,9 +48,9 @@ def deploy_model_from_gcs():
     }
     
     # Create SageMaker model
-    print(f"Creating model from GCS URL: {args.gcs_uri}")
+    print(f"Creating model from S3 URI: {args.s3_uri}")
     model = sagemaker.model.Model(
-        model_data=args.gcs_uri,  # Direct use of GCS URL
+        model_data=args.s3_uri,  # S3 URI for the model
         role=role,
         image_uri=image_uri,
         env=environment
@@ -81,4 +81,4 @@ def deploy_model_from_gcs():
     print(f"Once ready, you can invoke with: aws sagemaker-runtime invoke-endpoint --endpoint-name {endpoint_name} --content-type 'application/x-image' --body fileb://image.jpg output.png")
 
 if __name__ == "__main__":
-    deploy_model_from_gcs()
+    deploy_model_from_s3()
