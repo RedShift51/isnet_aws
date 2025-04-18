@@ -39,7 +39,7 @@ jobs:
       
       - name: Run unit tests
         run: |
-          pytest tests/ -v --exclude-integration
+          pytest tests/ -v -m "not integration"
   
   deploy:
     name: Deploy Model

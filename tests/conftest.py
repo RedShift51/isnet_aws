@@ -4,6 +4,9 @@ import shutil
 from PIL import Image
 import numpy as np
 
+def pytest_configure(config):
+    config.addinivalue_line("markers", "integration: mark test as an integration test")
+
 @pytest.fixture(scope="session")
 def test_data_dir():
     """Create and return the path to the test data directory."""
