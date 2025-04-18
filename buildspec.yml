@@ -1,0 +1,27 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+    commands:
+      - pip install -r requirements.txt
+      - pip install pytest sagemaker boto3
+  
+  pre_build:
+    commands:
+      - echo Running tests...
+      - pytest tests/
+  
+  build:
+    commands:
+      - echo Skipping model build as it's stored in Google Cloud Storage
+  
+  post_build:
+    commands:
+      - echo Deploying to SageMaker...
+      - python deploy_from_gcs.py
+
+artifacts:
+  files:
+    - deploy_from_gcs.py
