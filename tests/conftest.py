@@ -3,9 +3,11 @@ import os
 import shutil
 from PIL import Image
 import numpy as np
+import sys
+from pathlib import Path
 
-def pytest_configure(config):
-    config.addinivalue_line("markers", "integration: mark test as an integration test")
+# Add src directory to path to enable imports
+sys.path.append(str(Path(__file__).parent.parent))
 
 @pytest.fixture(scope="session")
 def test_data_dir():
@@ -21,7 +23,7 @@ def test_data_dir():
 def sample_images(test_data_dir):
     """Create and return paths to sample test images of different sizes."""
     image_paths = {}
-    sizes = [(512, 512), (256, 256), (800, 600)]
+    sizes = [(1024, 1024), (512, 512), (800, 600)]
     
     for width, height in sizes:
         filename = f"sample_{width}x{height}.jpg"
@@ -61,6 +63,18 @@ def mock_model_output():
     
     return mask
 
+def pytest_configure(config):
+    """Configure pytest with custom markers."""
+    config.addinivalue_line("markers", "integration: mark test as an integration test")
+
+def pytest_collection_modifyitems(config, items):
+    """Skip integration tests unless --run-integration is specified."""
+    if not config.getoption("--run-integration", default=False):
+        skip_integration = pytest.mark.skip(reason="Need --run-integration option to run")
+        for item in items:
+            if "integration" in item.keywords:
+                item.add_marker(skip_integration)
+
 def pytest_addoption(parser):
     """Add command line options to pytest."""
     parser.addoption(
@@ -69,11 +83,3 @@ def pytest_addoption(parser):
         default=False,
         help="Run integration tests that require model file"
     )
-
-def pytest_collection_modifyitems(config, items):
-    """Skip integration tests unless --run-integration is specified."""
-    if not config.getoption("--run-integration"):
-        skip_integration = pytest.mark.skip(reason="Need --run-integration option to run")
-        for item in items:
-            if "integration" in item.keywords:
-                item.add_marker(skip_integration)
