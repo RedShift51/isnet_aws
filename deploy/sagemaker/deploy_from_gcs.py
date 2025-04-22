@@ -43,7 +43,7 @@ def deploy_model_from_s3():
     # Environment variables to pass to the model container
     environment = {
         'SAGEMAKER_PROGRAM': 'inference.py',
-        'MODEL_PATH': '/opt/ml/model/isnet_converted/isnet_converted1.onnx',
+        'MODEL_PATH': '/opt/ml/model/isnet_converted1.onnx',
         'LOG_LEVEL': 'INFO'
     }
     

@@ -7,7 +7,7 @@
     },
     "environment_variables": {
         "MODEL_CACHE_SIZE": "2",
-        "MODEL_PATH": "/opt/ml/model/isnet_converted/isnet_converted1.onnx",
+        "MODEL_PATH": "/opt/ml/model/isnet_converted1.onnx",
         "LOG_LEVEL": "INFO"
     },
     "timeout_seconds": 120,
