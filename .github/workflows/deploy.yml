@@ -80,11 +80,11 @@ jobs:
           
           # Set instance type based on environment
           if [ "$ENV" == "prod" ]; then
-            echo "INSTANCE_TYPE=ml.c5.xlarge" >> $GITHUB_ENV
+            echo "INSTANCE_TYPE=ml.t2.medium" >> $GITHUB_ENV
           elif [ "$ENV" == "staging" ]; then
-            echo "INSTANCE_TYPE=ml.g4dn.xlarge" >> $GITHUB_ENV
+            echo "INSTANCE_TYPE=ml.t2.medium" >> $GITHUB_ENV
           else
-            echo "INSTANCE_TYPE=ml.g4dn.xlarge" >> $GITHUB_ENV
+            echo "INSTANCE_TYPE=ml.t2.medium" >> $GITHUB_ENV
           fi
       
       - name: Deploy to SageMaker from GCS
